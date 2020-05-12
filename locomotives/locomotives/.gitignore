@@ -1,0 +1,12 @@
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties

@@ -1,0 +1,1 @@
+java -jar ./target/locomotives-1.0-SNAPSHOT-runner.jar
