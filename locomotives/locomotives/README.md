@@ -1,8 +1,8 @@
 # locomotives project
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This project contains a REST service providing model train control for locomotives
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+The project uses Quarkus, the Supersonic Subatomic Java Framework (See https://quarkus.io/).
 
 ## Running the application in dev mode
 
@@ -28,3 +28,20 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 You can then execute your native executable with: `./target/locomotives-1.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/building-native-image.
+
+# Project Blog
+
+## Project creation
+
+Project created using JDK 11 Maven 3.6.3 Quarkus 1.4.2:
+
+`mvn io.quarkus:quarkus-maven-plugin:1.4.2.Final:create -DprojectGroupId=de.jk.quarkus.trains -DprojectArtifactId=locomotives -DclassName="de.jk.quarkus.trains.LocomotiveResource" -Dpath="/locomotives"`
+
+Open created directory: `cd locomotives`
+
+And compile and start: `mvnw compile quarkus:dev`
+
+Test: ` curl localhost:8080/locomotives`
+
+Show index.html with: `localhost:8080`
+
