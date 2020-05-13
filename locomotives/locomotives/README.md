@@ -70,13 +70,19 @@ Start jar file: `java -jar ./target/locomotives-1.0-SNAPSHOT-runner.jar`
 * First / next response times curl (curl localhost:8080/customers -s -o /dev/null -w "%{time_starttransfer}\n"): 234 / 63 ms
 * Jar + lib file size: 38 MB 
 
-### Create native executable build
+### Create native executable
 
-Start Docker Desktop (in my case Windows 10) or docker deamon
+As I don't have GraalVM and necessary visual studio components installed, I decided to run the native executable build (64 bit Linux executable) inside a container. This requires creating a tailored jar file using Red Hats UBI (Universal Base Image) image for a small image size.
 
-Run the native executable build in a container using: `mvnw package -Pnative -Dquarkus.native.container-build=true`
+Precondition here is local Docker desktop installation, running docker desktop and activated docker deamon (see Docker desktop settings).
 
-Run create native executable jar file: `java -jar ./target/locomotives-1.0-SNAPSHOT-native-image-source-jar/locomotives-1.0-SNAPSHOT-runner.jar`
+--> See https://quarkus.io/guides/building-native-image for details
+
+***
+Start Docker Desktop (in my case Windows 10) and activate docker deamon
+Create jar file containing native executable build in a container : `mvnw package -Pnative -Dquarkus.native.container-build=true`
+
+Run created native executable in jar file: `java -jar ./target/locomotives-1.0-SNAPSHOT-native-image-source-jar/locomotives-1.0-SNAPSHOT-runner.jar`
 * Startup time: 3 secs
 * First / next response times in browser (localhost:8080/locomotives): 217 / 5 ms
 * First / next response times curl (`curl localhost:8080/customers -s -o /dev/null -w "%{time_starttransfer}\n"`): 234 / 63 ms
