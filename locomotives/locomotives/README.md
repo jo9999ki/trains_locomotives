@@ -98,6 +98,8 @@ Create image: `docker build -f src/main/docker/Dockerfile.jvm -t quarkus/locomot
 
 Check image size: `docker image ls`: 509 MB
 
+Memory usage (docker desktop statistics): 2 GB * 3,75% = 75 MB 
+
 Deploy and run image in docker: `docker run -i --rm -p 8080:8080 quarkus/locomotives-jvm`
 * Started in 1,2 secs
 * First / next response times in browser (localhost:8080/locomotives): 217 / 5 ms
@@ -112,10 +114,12 @@ Create image: `docker build -f src/main/docker/Dockerfile.native -t quarkus/loco
 Deploy and run image in docker: `docker run -i --rm -p 8080:8080 quarkus/locomotives`
 * Started in 13 ms
 * First / next response times in browser (localhost:8080/locomotives): 15 / 4 ms
+* Memory usage: 2 GB * 0,26% = 5 MB
 
 ### Comparison with Spring Boot Image (Rest controller, Hibernate, H2)
 
 * Image size: 190 MB
 * Started in 7,6 secs
-* First / next response times in browser (localhost:8080/locomotives): 428 / 32 ms
+* First / next response times in browser (localhost:8080/customers): 428 / 32 ms
+* Memory usage: 2 GB * 12,57% = 260 MB
 
