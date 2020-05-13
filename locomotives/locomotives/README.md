@@ -1,17 +1,31 @@
-# locomotives project
+# Locomotives Service
 
-This project contains a REST service providing model train control for locomotives
+## Functional description
+
+This Java project provides a REST service providing model train control for locomotives
+
+## Technical preconditions
+
+* JDK 11 
+
+* Maven 3.6.3 
+
+* Quarkus 1.4.2
+
+* Docker Desktop / Deamon
+
+## locomotives project (content created by io.quarkus)
 
 The project uses Quarkus, the Supersonic Subatomic Java Framework (See https://quarkus.io/).
 
-## Running the application in dev mode
+### Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
 ```
 ./mvnw quarkus:dev
 ```
 
-## Packaging and running the application
+### Packaging and running the application
 
 The application can be packaged using `./mvnw package`.
 It produces the `locomotives-1.0-SNAPSHOT-runner.jar` file in the `/target` directory.
@@ -19,7 +33,7 @@ Be aware that it’s not an _über-jar_ as the dependencies are copied into the 
 
 The application is now runnable using `java -jar target/locomotives-1.0-SNAPSHOT-runner.jar`.
 
-## Creating a native executable
+### Creating a native executable
 
 You can create a native executable using: `./mvnw package -Pnative`.
 
@@ -41,7 +55,67 @@ Open created directory: `cd locomotives`
 
 And compile and start: `mvnw compile quarkus:dev`
 
-Test: ` curl localhost:8080/locomotives`
+Test: `curl localhost:8080/locomotives`
 
 Show index.html with: `localhost:8080`
+
+## Build and run jar file
+
+### JVM jar file
+Create jar file with: `mvn package`
+
+Start jar file: `java -jar ./target/locomotives-1.0-SNAPSHOT-runner.jar`
+* Application start time: 3,5 secs
+* First / next response times in browser (localhost:8080/locomotives): 213 / 5 ms
+* First / next response times curl (curl localhost:8080/customers -s -o /dev/null -w "%{time_starttransfer}\n"): 234 / 63 ms
+* Jar + lib file size: 38 MB 
+
+### Create native executable build
+
+Start Docker Desktop (in my case Windows 10) or docker deamon
+
+Run the native executable build in a container using: `mvnw package -Pnative -Dquarkus.native.container-build=true`
+
+Run create native executable jar file: `java -jar ./target/locomotives-1.0-SNAPSHOT-native-image-source-jar/locomotives-1.0-SNAPSHOT-runner.jar`
+* Startup time: 3 secs
+* First / next response times in browser (localhost:8080/locomotives): 217 / 5 ms
+* First / next response times curl (`curl localhost:8080/customers -s -o /dev/null -w "%{time_starttransfer}\n"`): 234 / 63 ms
+* Jar + lib file size: 10 MB
+
+### Comparison with Spring Boot project (Hibernate, H2, Rest Controller)
+
+* Application start time: 8,5 secs
+* First / next response times (`curl localhost:8080/customers -s -o /dev/null -w "%{time_starttransfer}\n"`): 422 / 62 ms
+* Jar file size: 38 MB
+
+## Create and run docker images
+
+### Docker image based on JVM (mode) jar file
+
+See created docker files in scr/main/docker for jvm and native mode
+
+Create image: `docker build -f src/main/docker/Dockerfile.jvm -t quarkus/locomotives-jvm .`
+
+Check image size: `docker image ls`: 509 MB
+
+Deploy and run image in docker: `docker run -i --rm -p 8080:8080 quarkus/locomotives-jvm`
+* Started in 1,2 secs
+* First / next response times in browser (localhost:8080/locomotives): 217 / 5 ms
+
+Remove image: `docker container ls` --> `docker kill <container-id>`
+
+### Docker image based on native (mode) jar file
+
+Create image: `docker build -f src/main/docker/Dockerfile.native -t quarkus/locomotives .`
+* Image size: 166 MB
+
+Deploy and run image in docker: `docker run -i --rm -p 8080:8080 quarkus/locomotives`
+* Started in 13 ms
+* First / next response times in browser (localhost:8080/locomotives): 15 / 4 ms
+
+### Comparison with Spring Boot Image (Rest controller, Hibernate, H2)
+
+* Image size: 190 MB
+* Started in 7,6 secs
+* First / next response times in browser (localhost:8080/locomotives): 428 / 32 ms
 
