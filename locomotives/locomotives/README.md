@@ -129,3 +129,133 @@ Deploy and run image in docker: `docker run -i --rm -p 8080:8080 quarkus/locomot
 * First / next response times in browser (localhost:8080/customers): 428 / 32 ms
 * Memory usage: 2 GB * 12,57% = 260 MB
 
+### Add Data model
+
+Add hibernate and jdbc dependencies to pom:
+
+* Quarkus Extension View: Mark extensions and right click "install extension". Open pom file to check created entries
+<pre><code>
+&lt;dependency&gt;
+	&lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+	&lt;artifactId&gt;quarkus-jdbc-h2&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+	&lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+	&lt;artifactId&gt;quarkus-hibernate-orm-panache&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</pre></code>
+
+* Add h2 configuration to application.properties (db might change for test and/or production later with separate profiles)
+<pre><code>
+#h2 configuration
+quarkus.datasource.url=jdbc:h2:mem:default
+quarkus.datasource.driver=org.h2.Driver
+quarkus.datasource.username=username-default
+quarkus.hibernate-orm.database.generation=drop-and-create
+quarkus.hibernate-orm.sql-load-script=h2/create_schema_and_records.sql
+quarkus.hibernate-orm.log.sql=true
+quarkus.hibernate-orm.log.bind-param=true
+</pre></code>
+
+* in folder src/main/resources create empty file
+<pre><code>
+h2/create_schema_and_records.sql
+</pre></code>
+
+* Create simple entity using active record pattern: 
+Create new source sub folder "model".	<br>
+Create new class and extend with PanacheEntity and annotate class with @Entity.	<br> 
+Add columns as public fields. Getter and setter methods will be created by Panache. 	<br>
+Add customized queries as static methods.	<br>
+A Hibernate repository class is not needed as Panache Entity class provides same methods.
+<br><pre><code>
+package de.jk.quarkus.trains.model;
+import java.time.LocalDate;
+import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.validation.constraints.NotEmpty;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.panache.common.Parameters;
+<br>
+@Entity
+public class Locomotive extends PanacheEntity{
+	<br>
+	//Id added by panache
+	<br>
+	@NotEmpty
+	@Column(name= "identification", length = 20, nullable = false)
+	//number or other identifier
+	public String identification;
+	<br>
+	@NotEmpty
+	//technical identifier model railroad dcc standard (0 ... 9999)
+	public Integer address;
+	<br>
+	//Last revision date
+	public LocalDate revision;
+	<br>
+	//Customized queries ...
+	<br>
+	public static Locomotive findByAddress(Integer address){
+        return find("address", address).firstResult();
+    }
+	<br>
+	public static List<Locomotive> findAllByIdentificationLike(String identification){
+        return find("identification LIKE concat('%', :identification, '%')", 
+                Parameters.with("identification", identification)).list();
+    }	
+}
+</pre></code>
+
+* Add following content to `h2/create_schema_and_records.sql` to create table and add first record
+<pre><code>
+DROP TABLE locomotive IF EXISTS;
+CREATE TABLE locomotive (
+  id         INTEGER IDENTITY PRIMARY KEY,
+  address INTEGER NOT NULL,
+  identification VARCHAR(20) NOT NULL,
+  revision DATE
+);
+CREATE INDEX index_locomotive ON locomotive (address);
+INSERT INTO locomotive VALUES (0, 1, &#39;99 5906&#39;, &#39;1986-01-01&#39;);
+</pre></code>
+
+* Enhance test class by new test method for Panache Entity. Don't inject Locomotive class as class loader has already loaded for test. Run JUnit test.
+<pre><code>
+@Test
+@Transactional
+public void testPanacheEntity() {
+	<br>
+	//Check preloaded data
+	List<Locomotive> listLocomotives = Locomotive.listAll();
+	assertEquals(1,listLocomotives.get(0).address);
+	<br>
+	//Add new record
+	Locomotive newLocomotive = new Locomotive();
+	newLocomotive.address = 2;
+	newLocomotive.identification = "99 6001";
+	newLocomotive.revision = LocalDate.of(1985, Month.JANUARY, 1);
+	newLocomotive.persist();	
+	<br>
+	//Find all records like identification
+	List<Locomotive> myLocomotiveList = Locomotive.findAllByIdentificationLike("99");
+	assertThat("listsize", myLocomotiveList.size()>1);
+	<br>
+	//Find first locomotive with certain address
+	Locomotive myLocomotive = Locomotive.findByAddress(2);
+	assertEquals("99 6001", myLocomotive.identification);
+	<br>
+	//Update Locomotive
+	Long id = myLocomotive.id;
+	myLocomotive.address=3;
+	myLocomotive.persist();
+	Locomotive updatedLocomotive = Locomotive.findById(id);
+	assertEquals(3, updatedLocomotive.address);
+	<br>
+	//Delete Locomotive
+	Locomotive.deleteById(id);
+	Locomotive deletedLocomotive = Locomotive.findById(id);
+	assertEquals(null, deletedLocomotive);
+}
+</pre></code>
