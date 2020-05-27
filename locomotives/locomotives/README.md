@@ -129,9 +129,9 @@ Deploy and run image in docker: `docker run -i --rm -p 8080:8080 quarkus/locomot
 * First / next response times in browser (localhost:8080/customers): 428 / 32 ms
 * Memory usage: 2 GB * 12,57% = 260 MB
 
-### Add Data model
+## Add Data model
 
-Add hibernate and jdbc dependencies to pom:
+* Add hibernate and jdbc dependencies to pom:
 
 * Quarkus Extension View: Mark extensions and right click "install extension". Open pom file to check created entries
 <pre><code>
@@ -144,10 +144,11 @@ Add hibernate and jdbc dependencies to pom:
 	&lt;artifactId&gt;quarkus-hibernate-orm-panache&lt;/artifactId&gt;
 &lt;/dependency&gt;
 </pre></code>
+<br>
 
 * Add h2 configuration to application.properties (db might change for test and/or production later with separate profiles)
+<br>
 <pre><code>
-#h2 configuration
 quarkus.datasource.url=jdbc:h2:mem:default
 quarkus.datasource.driver=org.h2.Driver
 quarkus.datasource.username=username-default
@@ -156,10 +157,11 @@ quarkus.hibernate-orm.sql-load-script=h2/create_schema_and_records.sql
 quarkus.hibernate-orm.log.sql=true
 quarkus.hibernate-orm.log.bind-param=true
 </pre></code>
+<br>
 
 * in folder src/main/resources create empty file
 <pre><code>
-h2/create_schema_and_records.sql
+<br> h2/create_schema_and_records.sql
 </pre></code>
 
 * Create simple entity using active record pattern: 
@@ -220,6 +222,7 @@ CREATE TABLE locomotive (
 CREATE INDEX index_locomotive ON locomotive (address);
 INSERT INTO locomotive VALUES (0, 1, &#39;99 5906&#39;, &#39;1986-01-01&#39;);
 </pre></code>
+<br>
 
 * Enhance test class by new test method for Panache Entity. <br>
 Don't inject Locomotive class as class loader has already loaded for test. <br>
@@ -275,3 +278,152 @@ public void testPanacheEntity() {
 	assertEquals(null, deletedLocomotive);
 }
 </pre></code>
+<br>
+
+## Add REST / JSON controller
+
+* Add extension `resteasy-jackson` with Quarkus Plugin
+The POM file should now contain following entry:
+<br>
+<pre><code>
+&lt;dependency&gt;
+ 	&lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+	&lt;artifactId&gt;quarkus-resteasy-jackson&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</pre></code>
+<br>
+
+* Add `@RegisterForReflection` to Locomotive Bean Class, that Jackson can use this class with REST controller after compile to Jars / GraalVM<br>
+<br>
+
++ Add ObjectMapperCustomizer and optimize local date format
+<pre><code>
+package de.jk.quarkus.trains.resources;
+<br>import java.text.DateFormat;
+<br>import java.text.SimpleDateFormat;
+<br>import javax.inject.Singleton;
+<br>import com.fasterxml.jackson.databind.ObjectMapper;
+<br>import io.quarkus.jackson.ObjectMapperCustomizer;
+<br>
+<br>@Singleton
+<br>public class RegisterCustomModuleCustomizer implements ObjectMapperCustomizer {
+<br>public void customize(ObjectMapper mapper) {
+<br>	//mapper.registerModule(new JavaTimeModule());
+<br>	DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+<br>	mapper.setDateFormat(df);
+<br>    }
+<br>} 
+</pre></code>
+<br>
+
+* Modify Locomotive Resource for CRUD (create/read/update/delete) methods
+<br>
+<pre><code>
+package de.jk.quarkus.trains.resources;
+import java.util.List;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import de.jk.quarkus.trains.model.Locomotive;
+<br>
+@Path(&quot;/locomotives&quot;)
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+@Transactional
+public class LocomotiveResource {
+<br>
+	@Inject
+    EntityManager em;
+	<br>
+    @GET
+    public Response getTotalList() {
+    	List&lt;Locomotive&gt; locomotives = Locomotive.listAll();
+    	return Response.ok(locomotives).build();
+    }
+	<br>
+    @POST
+    public Response add(Locomotive locomotive) {
+		locomotive.id = null;
+		locomotive.persist();	
+		return Response.status(Response.Status.CREATED).entity(locomotive).build();
+    }
+    <br>
+    @PUT
+    public Response change(Locomotive locomotive) {
+		//locomotive.persist();
+    	em.merge(locomotive);
+		return Response.status(Response.Status.OK).entity(locomotive).build();
+    }
+	<br>
+    @DELETE
+    @Path(&quot;/{id}&quot;)
+    public Response delete(@PathParam(&quot;id&quot;) Long id) {
+    	Locomotive locomotive  = new Locomotive().findById(id);
+    	locomotive.delete();
+    	return Response
+        		.status(Response.Status.NO_CONTENT)
+        		.build();
+    }
+}
+</pre></code>
+<br>
+
+* Start application and check GET endpoint in Browser: `http://localhost:8080/locomotives`
+
+<br>
+
+* Modify test class and add methods for REST endpoint to check all single methods - example for list endpoint
+<pre><code>
+@Test
+<br>@Order(20)
+<br>public void testRESTGetAll() {
+<br>    given()
+<br>      .when().get("/locomotives")
+<br>      .then()
+<br>         .statusCode(OK.getStatusCode())
+<br>         .body("id", notNullValue())
+<br>     	 .body("address", notNullValue());
+<br>}
+</pre></code>
+<br>
+
+
+### Add paging
+
+
+### Input validation
+
+* Add input validation annotations for POST and PuT endpoints
+
+<pre><code>
+... here we go
+</pre></code>
+<br>
+
+* Optimize annotations in bean class
+
+<pre><code>
+... here we go
+</pre></code>
+<br>
+
+* Add Exception Mapper
+
+* Add test cases für invalid cases
+
+<pre><code>
+... here we go
+</pre></code>
+<br>
+
+## OpenAPI docu 

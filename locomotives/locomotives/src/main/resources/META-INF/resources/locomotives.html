@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Locomotive REST service</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.8/wing.min.css"/>
+    <!-- Load AngularJS -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script type="text/javascript">
+      var app = angular.module("LocomotiveManagement", []);
+
+      //Controller Part
+      app.controller("LocomotiveManagementController", function ($scope, $http) {
+
+        //Initialize page with default data which is blank in this example
+        $scope.locomotives = [];
+
+        //Now load the data from server
+        _refreshPageData();
+
+        /* Private Methods */
+        //HTTP GET- get all locomotives collection
+        function _refreshPageData() {
+          $http({
+            method: 'GET',
+            url: '/locomotives'
+          }).then(function successCallback(response) {
+            $scope.locomotives = response.data;
+          }, function errorCallback(response) {
+            console.log(response.statusText);
+          });
+        }
+
+        function _success(response) {
+          _refreshPageData();
+        }
+
+        function _error(response) {
+          alert(response.data.message || response.statusText);
+        }
+      });
+    </script>
+</head>
+<body ng-app="LocomotiveManagement" ng-controller="LocomotiveManagementController">
+
+<div class="container">
+    <h1>REST Service - Locomotive</h1>
+
+    <h3>Locomotive List</h3>
+    <div class="row">
+    	<div class="col-2">Id</div>
+        <div class="col-2">DCC Address</div>
+        <div class="col-4">Name / Number</div>
+        <div class="col-2">Last Revision</div>
+    </div>
+    <div class="row" ng-repeat="locomotive in locomotives">
+    	<div class="col-2">{{ locomotive.id }}</div>
+        <div class="col-2">{{ locomotive.address }}</div>
+        <div class="col-4">{{ locomotive.identification }}</div>
+        <div class="col-2">{{ locomotive.revision }}</div>
+    </div>
+</div>
+
+</body>
+</html>

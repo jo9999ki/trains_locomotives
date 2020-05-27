@@ -1,4 +1,5 @@
 package de.jk.quarkus.trains.model;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -8,7 +9,9 @@ import javax.validation.constraints.NotEmpty;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.panache.common.Parameters;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 @Entity
+@RegisterForReflection
 public class Locomotive extends PanacheEntity{
 	//Id added by panache
 	
