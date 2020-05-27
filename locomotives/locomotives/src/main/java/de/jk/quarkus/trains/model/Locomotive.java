@@ -12,14 +12,13 @@ import io.quarkus.panache.common.Parameters;
 public class Locomotive extends PanacheEntity{
 	//Id added by panache
 	
-	@NotEmpty
-	@Column(name= "identification", length = 20, nullable = false)
 	//number or other identifier
+	@NotEmpty
+	@Column(name= "identification", length = 20, nullable = false)	
 	public String identification;
 	
-	
-	@NotEmpty
 	//technical identifier model railroad dcc standard (0 ... 9999)
+	@NotEmpty
 	public Integer address;
 	
 	//Last revision date
@@ -34,6 +33,5 @@ public class Locomotive extends PanacheEntity{
         return find("identification LIKE concat('%', :identification, '%')", 
                 Parameters.with("identification", identification)).list();
     }
-
 	
 }

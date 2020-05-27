@@ -40,6 +40,18 @@ public class LocomotiveResourceTest {
 		List<Locomotive> myLocomotiveList = Locomotive.findAllByIdentificationLike("99");
 		assertThat("listsize", myLocomotiveList.size()>1);
 
+		//Find all records with paging
+		PanacheQuery<Locomotive> pagedLocomotiveList = Locomotive.findAll();
+		// make it use pages of 25 entries at a time
+		pagedLocomotiveList.page(Page.ofSize(25));
+		assertEquals(1, pagedLocomotiveList.pageCount());
+		// get the first page
+		List<Locomotive> firstPage = pagedLocomotiveList.list();
+		assertEquals(2, firstPage.size());
+		// get the xxx page
+		List<Locomotive> page2 = pagedLocomotiveList.page(Page.of(2, 25)).list();
+		assertEquals(0, page2.size());
+		
 		//Find first locomotive with certain address
 		Locomotive myLocomotive = Locomotive.findByAddress(2);
 		assertEquals("99 6001", myLocomotive.identification);

@@ -221,7 +221,11 @@ CREATE INDEX index_locomotive ON locomotive (address);
 INSERT INTO locomotive VALUES (0, 1, &#39;99 5906&#39;, &#39;1986-01-01&#39;);
 </pre></code>
 
-* Enhance test class by new test method for Panache Entity. Don't inject Locomotive class as class loader has already loaded for test. Run JUnit test.
+* Enhance test class by new test method for Panache Entity. <br>
+Don't inject Locomotive class as class loader has already loaded for test. <br>
+Use standard Panache methods to list records and create/read/update/delete single records <br>
+Use standard Panache paginging for long lists<br>
+Run JUnit test.
 <pre><code>
 @Test
 @Transactional
@@ -245,6 +249,18 @@ public void testPanacheEntity() {
 	//Find first locomotive with certain address
 	Locomotive myLocomotive = Locomotive.findByAddress(2);
 	assertEquals("99 6001", myLocomotive.identification);
+	<br>
+	//Find all records with paging
+	PanacheQuery<Locomotive> pagedLocomotiveList = Locomotive.findAll();
+	// make it use pages of 25 entries at a time
+	pagedLocomotiveList.page(Page.ofSize(25));
+	assertEquals(1, pagedLocomotiveList.pageCount());
+	// get the first page
+	List<Locomotive> firstPage = pagedLocomotiveList.list();
+	assertEquals(2, firstPage.size());
+	// get the xxx page
+	List<Locomotive> page2 = pagedLocomotiveList.page(Page.of(2, 25)).list();
+	assertEquals(0, page2.size());
 	<br>
 	//Update Locomotive
 	Long id = myLocomotive.id;
