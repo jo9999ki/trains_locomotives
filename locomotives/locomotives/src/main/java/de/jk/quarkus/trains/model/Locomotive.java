@@ -11,6 +11,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.hibernate.validator.constraints.Length;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -18,24 +19,27 @@ import io.quarkus.panache.common.Parameters;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 @Entity
 @RegisterForReflection
+@Schema(name="Locomotive", description="data required for control of a locomotive") //OpenAPI
 public class Locomotive extends PanacheEntity{
 	//Id added by panache
 	
 	//number or other identifier
 	@NotBlank(message="identification cannot be blank") //Validation
 	@Length(min = 1, max = 20, message="identifier length must be between 1 and 20")//Validation
-	@Column(name= "identification", length = 20, nullable = false)	
-	@NotEmpty //Database
+	@Column(name= "identification", length = 20, nullable = false)//Database
+	@Schema(description = "identification, e.g. number or name", minLength = 1, maxLength = 20, required = true, example = "99 5906") //OpenAPI
 	public String identification;
 	
 	//technical identifier model railroad dcc standard (0 ... 9999)
 	@NotNull(message="DCC address cannot be empty")//Validation
 	@Min(0)//Validation
 	@Max(9999)//Validation
+	@Schema(description = "DCC decoder address", required = true, example = "59") //OpenAPI
 	public Integer address;
 	
 	//Last revision date
 	@Past (message="revision date cannot be in the future") //Validation
+	@Schema(description = "date of last revision", format = "yyyy-MM-dd", required = false, example = "2020-01-01") //OpenAPI
 	public LocalDate revision;
 	
 	//Customized queries ...

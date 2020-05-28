@@ -511,4 +511,17 @@ public void testRESTPostInputValidationMandatory() {
 }
 </pre></code>
 
-## OpenAPI docu 
+## OpenAPI docu
+* Add extension `smallrye-openapi` with Quarkus eclipse plugin 
+
+* Or do same by running following maven command: `mvnw quarkus:add-extension -Dextensions="openapi"`
+<br>
+
+* Start browser and downloads generated swagger file (open api version 3) with `/openapi` endpoint
+<br>
+
+* Show swagger ui with `/swagger-ui` endpoint
+ 
+* Add annotations to REST resource
+
+

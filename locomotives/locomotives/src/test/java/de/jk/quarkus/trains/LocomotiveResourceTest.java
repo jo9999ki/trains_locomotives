@@ -161,9 +161,9 @@ public class LocomotiveResourceTest {
 	                .log()
                 	.body()
 	                .statusCode(BAD_REQUEST.getStatusCode())
-	                .body("parameterViolations.findAll { it.path == \"add.locomotive.identification\" && it.value == \"\"}.message",  
+	                .body("errorList.findAll {it.code == \"400001\" && it.parameter == \"add.locomotive.identification\" && it.value == \"\"}.message",  
 	                		hasItem("identification cannot be blank"))
-        			.body("parameterViolations.findAll { it.path == \"add.locomotive.address\" && it.value == \"\"}.message",  
+        			.body("errorList.findAll {it.code == \"400001\" && it.parameter == \"add.locomotive.address\" && it.value == \"\"}.message",  
         					hasItem("DCC address cannot be empty"));
         
     }
