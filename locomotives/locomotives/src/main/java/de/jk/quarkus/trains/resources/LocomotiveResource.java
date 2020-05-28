@@ -5,6 +5,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
+import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,6 +30,9 @@ public class LocomotiveResource {
 	@Inject
     EntityManager em;
 	
+	@Inject
+	Validator validator;
+	
     @GET
     public Response getTotalList() {
     	List<Locomotive> locomotives = Locomotive.listAll();
@@ -35,14 +40,14 @@ public class LocomotiveResource {
     }
 
     @POST
-    public Response add(Locomotive locomotive) {
+    public Response add(@Valid Locomotive locomotive) {
 		locomotive.id = null;
 		locomotive.persist();	
 		return Response.status(Response.Status.CREATED).entity(locomotive).build();
     }
     
     @PUT
-    public Response change(Locomotive locomotive) {
+    public Response change(@Valid Locomotive locomotive) {
 		//locomotive.persist();
     	em.merge(locomotive);
 		return Response.status(Response.Status.OK).entity(locomotive).build();

@@ -1,10 +1,9 @@
 package de.jk.quarkus.trains;
 
 import static io.restassured.RestAssured.given;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -128,9 +127,9 @@ public class LocomotiveResourceTest {
 	@Test
 	@Order(21)
     public void testRESTPost() {
-        LocomotiveTestBean locomotive = new LocomotiveTestBean();
+        Locomotive locomotive = new Locomotive();
         locomotive.address=2;
-        locomotive.identification="99 193";
+        locomotive.identification="99 999";
         locomotive.revision = LocalDate.of(1985, Month.JANUARY, 1);
         
         ValidatableResponse response = given().contentType("application/json").body(locomotive)
@@ -147,14 +146,35 @@ public class LocomotiveResourceTest {
         System.out.println(LocomotiveResourceTest.identifier);
         assertEquals(true,true);
     }
-	
+
+	@Test
+	@Order(22)
+    public void testRESTPostInputValidationMandatory() {
+        Locomotive locomotive = new Locomotive();
+        locomotive.address=null;
+        locomotive.identification=null;
+        locomotive.revision = null;
+        
+        ValidatableResponse response = given().contentType("application/json").body(locomotive)
+                .when().post("/locomotives")
+                .then()
+	                .log()
+                	.body()
+	                .statusCode(BAD_REQUEST.getStatusCode())
+	                .body("parameterViolations.findAll { it.path == \"add.locomotive.identification\" && it.value == \"\"}.message",  
+	                		hasItem("identification cannot be blank"))
+        			.body("parameterViolations.findAll { it.path == \"add.locomotive.address\" && it.value == \"\"}.message",  
+        					hasItem("DCC address cannot be empty"));
+        
+    }
+
    @Test
-   @Order(22)
+   @Order(25)
     public void testRestPut() {
-		LocomotiveTestBean locomotive = new LocomotiveTestBean();
+		Locomotive locomotive = new Locomotive();
 		locomotive.id= LocomotiveResourceTest.identifier;
 		locomotive.address=93;
-        locomotive.identification="99 193";
+        locomotive.identification="99 998";
         locomotive.revision = LocalDate.of(1986, Month.JANUARY, 1);
 
         ValidatableResponse response = given().contentType("application/json").body(locomotive)
@@ -172,7 +192,7 @@ public class LocomotiveResourceTest {
     }
    
    @Test
-   @Order(23)
+   @Order(29)
    public void testRestDelete() {
 	   given()
             .when().delete("/locomotives/"+ LocomotiveResourceTest.identifier)

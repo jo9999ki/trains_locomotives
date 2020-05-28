@@ -401,29 +401,114 @@ public class LocomotiveResource {
 ### Add paging
 
 
-### Input validation
+### Input validation with Hibernate validator
+* Add extension `hibernate-validator` to project
+<br>
 
-* Add input validation annotations for POST and PuT endpoints
+* Inject validator in REST resource `@Inject Validator validator;`
+<br>
 
+* Add @Valid Annotation to Endpoints, where Entity Bean is transferred - throws ConstraintViolationException with details of each violation
 <pre><code>
-... here we go
+@POST
+    public Response add(@Valid Locomotive locomotive) {
+</pre></code>
+<br>
+<pre><code>
+@PUT
+    public Response change(@Valid Locomotive locomotive) {
 </pre></code>
 <br>
 
-* Optimize annotations in bean class
-
+* Add validation annotations in bean class
 <pre><code>
-... here we go
+//number or other identifier
+@NotBlank(message=&quot;identification cannot be blank&quot;) //Validation
+@Length(min = 1, max = 20, message=&quot;identifier length must be between 1 and 20&quot;)//Validation
+@Column(name= &quot;identification&quot;, length = 20, nullable = false)	
+@NotEmpty //Database
+public String identification;
+<br>
+//technical identifier model railroad dcc standard (0 ... 9999)
+@NotNull(message=&quot;DCC address cannot be empty&quot;)//Validation
+@Min(0)//Validation
+@Max(9999)//Validation
+public Integer address;
+<br>
+//Last revision date
+@Past (message=&quot;revision date cannot be in the future&quot;) //Validation
+public LocalDate revision;
 </pre></code>
 <br>
 
-* Add Exception Mapper
-
-* Add test cases für invalid cases
-
+* Add test case for missing mandatory values
 <pre><code>
-... here we go
+@Test
+@Order(22)
+public void testRESTPostInputValidationMandatory() {
+    Locomotive locomotive = new Locomotive();
+    locomotive.address=null;
+    locomotive.identification=null;
+    locomotive.revision = null;<br>
+    ValidatableResponse response = given().contentType(&quot;application/json&quot;).body(locomotive)
+            .when().post(&quot;/locomotives&quot;)
+            .then()
+                .log()
+            	.body()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body(&quot;parameterViolations.findAll { it.path == \&quot;add.locomotive.identification\&quot; &amp;&amp; it.value == \&quot;\&quot;}.message&quot;,  hasItem(&quot;identification cannot be blank&quot;))<br>    			.body(&quot;parameterViolations.findAll { it.path == \&quot;add.locomotive.address\&quot; &amp;&amp; it.value == \&quot;\&quot;}.message&quot;, hasItem(&quot;DCC address cannot be empty&quot;));
+    
+}
 </pre></code>
 <br>
+
+* See log content - answers with expected http code 400 and gives all information for 100% test coverage per parameter - based on current output:
+<pre><code>
+{
+    &quot;id&quot;: 2,
+    &quot;identification&quot;: &quot;99 999&quot;,
+    &quot;address&quot;: 2,
+    &quot;revision&quot;: [
+        1985,
+        1,
+        1
+    ]
+}
+2
+{
+    &quot;exception&quot;: null,
+    &quot;propertyViolations&quot;: [ ],
+    &quot;classViolations&quot;: [ ],
+    &quot;parameterViolations&quot;: [
+        {
+            &quot;constraintType&quot;: &quot;PARAMETER&quot;,
+            &quot;path&quot;: &quot;add.locomotive.identification&quot;,
+            &quot;message&quot;: &quot;darf nicht leer sein&quot;,
+            &quot;value&quot;: &quot;&quot;
+        }, {
+            &quot;constraintType&quot;: &quot;PARAMETER&quot;,
+            &quot;path&quot;: &quot;add.locomotive.identification&quot;,
+            &quot;message&quot;: &quot;identification cannot be blank&quot;,
+            &quot;value&quot;: &quot;&quot;
+        }, {
+            &quot;constraintType&quot;: &quot;PARAMETER&quot;,
+            &quot;path&quot;: &quot;add.locomotive.address&quot;,
+            &quot;message&quot;: &quot;DCC address cannot be empty&quot;,
+            &quot;value&quot;: &quot;&quot;
+        }
+    ],
+    &quot;returnValueViolations&quot;: []
+}
+{
+    &quot;id&quot;: 2,
+    &quot;identification&quot;: &quot;99 998&quot;,
+    &quot;address&quot;: 93,
+    &quot;revision&quot;: [
+        1986,
+        1,
+        1
+    ]
+}
+</pre></code>
 
 ## OpenAPI docu 
