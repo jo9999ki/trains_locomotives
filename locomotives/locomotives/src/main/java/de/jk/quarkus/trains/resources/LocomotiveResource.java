@@ -5,31 +5,36 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.Validator;
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
-import de.jk.quarkus.trains.exception.BusinessException;
 import de.jk.quarkus.trains.exception.ErrorsResponse;
 import de.jk.quarkus.trains.exception.RecordNotFoundException;
 import de.jk.quarkus.trains.model.Locomotive;
+import io.quarkus.panache.common.Page;
 
 @Tag(name= "Locomotives") //OpenAPI
 @Path("/locomotives")
@@ -46,11 +51,20 @@ public class LocomotiveResource {
 	
     @GET
     @Operation(summary = "List of locomotives")
+    @Parameters({
+    	@Parameter(name = "pageNum", in = ParameterIn.QUERY,required = false, 
+    			description = "number of requested page, value >= 0"),
+    	@Parameter(name = "pageSize", in = ParameterIn.QUERY,required = false, 
+		description = "size of page (number of records), value >= 0" )
+    	})
     @APIResponse(responseCode = "200", description = "Total list of locomotives", 
     		content = @Content(mediaType = "application/json",
             		schema = @Schema(type = SchemaType.ARRAY, implementation = Locomotive.class)))
-    public Response getTotalList() {
-    	List<Locomotive> locomotives = Locomotive.listAll();
+    public Response getPagableList( 
+    		@QueryParam("pageNum") @DefaultValue("0") @Min(0) int pageNum, 
+    		@QueryParam("pageSize") @DefaultValue("10") @Min(0) int pageSize) {
+    	List<Locomotive> locomotives = Locomotive
+    			.findAll().page(Page.of(pageNum, pageSize)).list();
     	return Response
     			.ok(locomotives)
         		.header("responsetime", "0815")
