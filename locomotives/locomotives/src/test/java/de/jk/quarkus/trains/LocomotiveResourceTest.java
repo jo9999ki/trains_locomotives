@@ -135,8 +135,7 @@ public class LocomotiveResourceTest {
         ValidatableResponse response = given().contentType("application/json").body(locomotive)
                 .when().post("/locomotives")
                 .then()
-	                .log()
-                	.body()
+	                //.log().body()
 	                .statusCode(CREATED.getStatusCode())
                 	.body("id", notNullValue())
                 	.body("address", equalTo(locomotive.address));
@@ -158,8 +157,7 @@ public class LocomotiveResourceTest {
         ValidatableResponse response = given().contentType("application/json").body(locomotive)
                 .when().post("/locomotives")
                 .then()
-	                .log()
-                	.body()
+	                //.log().body()
 	                .statusCode(BAD_REQUEST.getStatusCode())
 	                .body("errorList.findAll {it.code == \"400001\" && it.parameter == \"add.locomotive.identification\" && it.value == \"\"}.message",  
 	                		hasItem("identification cannot be blank"))
@@ -180,7 +178,7 @@ public class LocomotiveResourceTest {
         ValidatableResponse response = given().contentType("application/json").body(locomotive)
                 .when().put("/locomotives")
                 .then()
-                	.log().body()
+                	//.log().body()
                 	.statusCode(OK.getStatusCode())
                 	//.body("id", is(book.id)) 
                 	//-> this doesn't work for long or double values. Need to use JSON Path after

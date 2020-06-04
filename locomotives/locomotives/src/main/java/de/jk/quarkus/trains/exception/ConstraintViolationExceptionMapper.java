@@ -1,4 +1,4 @@
-package de.jk.quarkus.trains.exception.base;
+package de.jk.quarkus.trains.exception;
 
 import java.util.Iterator;
 import java.util.Set;

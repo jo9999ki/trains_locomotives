@@ -26,9 +26,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
-import de.jk.quarkus.trains.exception.base.BusinessException;
-import de.jk.quarkus.trains.exception.base.ErrorsResponse;
-import de.jk.quarkus.trains.exception.base.RecordNotFoundException;
+import de.jk.quarkus.trains.exception.BusinessException;
+import de.jk.quarkus.trains.exception.ErrorsResponse;
+import de.jk.quarkus.trains.exception.RecordNotFoundException;
 import de.jk.quarkus.trains.model.Locomotive;
 
 @Tag(name= "Locomotives") //OpenAPI
@@ -51,7 +51,10 @@ public class LocomotiveResource {
             		schema = @Schema(type = SchemaType.ARRAY, implementation = Locomotive.class)))
     public Response getTotalList() {
     	List<Locomotive> locomotives = Locomotive.listAll();
-    	return Response.ok(locomotives).build();
+    	return Response
+    			.ok(locomotives)
+        		.header("responsetime", "0815")
+    			.build();
     }
 
     @POST

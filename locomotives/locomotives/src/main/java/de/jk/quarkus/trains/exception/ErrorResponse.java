@@ -1,4 +1,4 @@
-package de.jk.quarkus.trains.exception.base;
+package de.jk.quarkus.trains.exception;
 
 import java.time.Instant;
 import java.util.List;

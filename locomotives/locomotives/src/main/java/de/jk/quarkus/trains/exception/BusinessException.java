@@ -1,4 +1,4 @@
-package de.jk.quarkus.trains.exception.base;
+package de.jk.quarkus.trains.exception;
 
 public class BusinessException extends RuntimeException 
 {

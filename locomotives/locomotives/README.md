@@ -511,17 +511,206 @@ public void testRESTPostInputValidationMandatory() {
 }
 </pre></code>
 
+### Improve error handling standardized error output format
+
+* Add an customized exception mapper to enable output format for input validation errors. 
+This enables the output structure definition in swagger files.
+Different to same approach in Spring boot it is not possible to have one generalized exception mapper including global exception type as well as customized exceptions. Handling global exceptions would override and break central quarkus exception handling.
+In consequence I decided to create on exception handler for Quarkus validation constraints violations and second exception handler for customized business constraints and my customized business exception type.<br>
+</p>
+* Constraint Violation Exception Mapper
+<pre><code>
+@Provider
+public class ConstraintViolationExceptionMapper implements ExceptionMapper&lt;ConstraintViolationException&gt; 
+{
+    @Override
+    public Response toResponse(ConstraintViolationException exception) 
+    {
+    	Set&lt;ConstraintViolation&lt;?&gt;&gt; violations = exception.getConstraintViolations();
+    	ErrorsResponse errors = new ErrorsResponse();
+    	Iterator&lt;ConstraintViolation&lt;?&gt;&gt; iterator = violations.iterator();
+        while(iterator.hasNext()) {
+            ConstraintViolation&lt;Locomotive&gt; violation = (ConstraintViolation&lt;Locomotive&gt;) iterator.next();
+            String value=null;
+            if (violation.getInvalidValue() != null) {
+            	value = violation.getInvalidValue().toString();
+            }else {
+            	value = &quot;&quot;;
+            }
+            errors.getErrorList().add(new ErrorResponse(
+            		&quot;400001&quot;, 
+            		violation.getMessage(),
+            		violation.getPropertyPath().toString(),
+            		value,
+            		null)
+            		);
+        }
+    	return Response.status(Status.BAD_REQUEST).entity(errors).build();  
+    }
+}
+</pre></code>
+</p>
+
+* Standardized error list
+<pre><code>
+package de.jk.quarkus.trains.exception;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+<br>
+@RegisterForReflection
+public class ErrorsResponse {
+   private List&lt;ErrorResponse&gt; errorList = new ArrayList&lt;&gt;();
+<br>
+    //Timestamp error occured
+    private String timestamp = Instant.now().toString();
+	<br>
+    ... Getters and Setters ...
+}
+</pre></code>
+</p>
+
+* Standardized error
+<pre><code>
+package de.jk.quarkus.trains.exception;
+import java.time.Instant;
+import java.util.List;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+<br>
+@RegisterForReflection
+public class ErrorResponse
+{
+    public ErrorResponse(String code, String message, String parameter, String value, List&lt;String&gt; details) {
+        super();
+        this.code = code;
+        this.parameter = parameter;
+        this.value = value;
+        this.message = message;
+        this.details = details;
+    }
+ <br>
+    //Unique error code
+    private String code;
+    <br>
+    //General error message about nature of error
+    private String message;
+ <br>
+    //Input parameter, which caused the error
+    private String parameter;
+<br>
+    //Input parameter, which caused the error
+    private String value;
+<br>
+    //Specific errors in API request processing
+    private List&lt;String&gt; details;
+<br>
+    ... Getters and Setters ....
+}
+</pre></code>
+</p> 
+
 ## OpenAPI docu
-* Add extension `smallrye-openapi` with Quarkus eclipse plugin 
+* Add extension `smallrye-openapi` with Quarkus eclipse plugin or do same by running following maven command: 
+<br>`mvnw quarkus:add-extension -Dextensions="openapi"`
+</p>
 
-* Or do same by running following maven command: `mvnw quarkus:add-extension -Dextensions="openapi"`
-<br>
-
-* Start browser and downloads generated swagger file (open api version 3) with `/openapi` endpoint
-<br>
+* Start browser and download generated swagger file (open api version 3) with `/openapi` endpoint
+</p>
 
 * Show swagger ui with `/swagger-ui` endpoint
+</p>
  
-* Add annotations to REST resource
+* Add annotations to REST resource class and attributes 
+</p>
+Class level
+<br>
+<pre><code>
+@Tag(name= "Locomotives") //OpenAPI
+@Path("/locomotives")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+@Transactional
+public class LocomotiveResource {
+</pre></code>
+</p>
+Method Level
+<br>
+<pre><code>
+@POST
+    @Operation(summary = "Create new locomotive")
+    @APIResponse(responseCode = "201", description = "Created locomotive",
+                 content = @Content(mediaType = "application/json",
+                 	schema = @Schema(implementation = Locomotive.class)))
+    @APIResponse(responseCode = "400", description = "Invalid request data",
+    content = @Content(mediaType = "application/json",
+ 	schema = @Schema(implementation = ErrorsResponse.class)))
+    @APIResponse(responseCode = "500", description = "Unknown error", 
+	content = @Content(mediaType = "application/json",
+    		schema = @Schema(implementation = String.class)))    
+    public Response add(@Valid Locomotive locomotive) {
+</pre></code>
+</p>
+
+
+* Add annotations to Panache Entity class and attributes as well as to error output classes
+</p>
+Class Level
+<pre><code>
+@Entity
+@RegisterForReflection
+@Schema(name="Locomotive", description="data required for control of a locomotive") //OpenAPI
+public class Locomotive extends PanacheEntity{
+</pre></code>
+</p>
+Attribute Level
+<pre><code>
+//technical identifier model railroad dcc standard (0 ... 9999)
+	@NotNull(message="DCC address cannot be empty")//Validation
+	@Min(0)//Validation
+	@Max(9999)//Validation
+	@Schema(description = "DCC decoder address", required = true, example = "59") //OpenAPI
+	public Integer address;
+</pre></code>
+</p>
+
+* If required, activate `/swagger-ui` endpoint in production profile too (by default dev and test only):
+<br>
+`quarkus.swagger-ui.always-include=true`
+</p>
+
+* Add top information for Swagger-UI pages - requires an JAX-RS Application class
+<pre><code>
+import javax.ws.rs.core.Application;
+import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
+import org.eclipse.microprofile.openapi.annotations.info.Contact;
+import org.eclipse.microprofile.openapi.annotations.info.Info;
+import org.eclipse.microprofile.openapi.annotations.info.License;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+<br>
+@OpenAPIDefinition(
+	    tags = {
+	            @Tag(name=&quot;Locomotives&quot;, description=&quot;Operations for Locomotive and function maintenance&quot;),
+	            @Tag(name=&quot;status&quot;, description=&quot;Operations for dcc communication&quot;)
+	    },
+	    info = @Info(
+	        title=&quot;Locomotive API&quot;,
+	        version = &quot;1.0.0&quot;,
+	        contact = @Contact(
+	            name = &quot;DCC API Github side&quot;,
+	            url = &quot;https://github.com/jo9999ki/trains_locomotives&quot;,
+	            email = &quot;jochen_kirchner@yahoo.com&quot;),
+	        license = @License(
+	            name = &quot;Apache 2.0&quot;,
+	            url = &quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;))
+	)
+public class OpenAPIApplicationLevelConfiguration extends Application{
+<br>
+}
+</pre></code>
+</p> 
+
 
 
