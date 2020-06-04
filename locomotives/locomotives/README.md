@@ -346,8 +346,11 @@ public class LocomotiveResource {
     EntityManager em;
 	<br>
     @GET
-    public Response getTotalList() {
-    	List&lt;Locomotive&gt; locomotives = Locomotive.listAll();
+	public Response getPagableList( 
+    		@QueryParam("pageNum") @DefaultValue("0") @Min(0) int pageNum, 
+    		@QueryParam("pageSize") @DefaultValue("10") @Min(0) int pageSize) {
+    	List<Locomotive> locomotives = Locomotive
+    			.findAll().page(Page.of(pageNum, pageSize)).list();
     	return Response.ok(locomotives).build();
     }
 	<br>
@@ -707,29 +710,3 @@ public class OpenAPIApplicationLevelConfiguration extends Application{
 }
 </pre></code>
 </p> 
-
-### Add paging in REST resource
-* Add query parameters with default values and change request logic
-<pre><code>
-public Response getPagableList( 
-    		@QueryParam("pageNum") @DefaultValue("0") @Min(0) int pageNum, 
-    		@QueryParam("pageSize") @DefaultValue("10") @Min(0) int pageSize) {
-    	List<Locomotive> locomotives = Locomotive
-    			.findAll().page(Page.of(pageNum, pageSize)).list();
-</pre></code>
-</p> 
-
-* Add OpenAPI method parameters annotations
-<pre><code>
-@Parameters({
-	@Parameter(name = "pageNum", in = ParameterIn.QUERY,required = false, 
-			description = "number of requested page, value >= 0"),
-	@Parameter(name = "pageSize", in = ParameterIn.QUERY,required = false, 
-	description = "size of page (number of records), value >= 0" )
-	})
-</pre></code>
-</p> 
- 
-
-
-
