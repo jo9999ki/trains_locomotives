@@ -1,9 +1,11 @@
+package de.jk.quarkus.trains.openapi;
 import javax.ws.rs.core.Application;
 
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.info.Contact;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.info.License;
+import org.eclipse.microprofile.openapi.annotations.servers.Server;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @OpenAPIDefinition(
@@ -12,7 +14,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 	            @Tag(name="status", description="Operations for dcc communication")
 	    },
 	    info = @Info(
-	        title="Locomotive API",
+	        title="Locomotive DCC API",
+	        description = "OpenAPI document structure standard: version 3.0",
 	        version = "1.0.0",
 	        contact = @Contact(
 	            name = "DCC API Github side",
@@ -20,7 +23,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 	            email = "jochen_kirchner@yahoo.com"),
 	        license = @License(
 	            name = "Apache 2.0",
-	            url = "http://www.apache.org/licenses/LICENSE-2.0.html"))
+	            url = "http://www.apache.org/licenses/LICENSE-2.0.html")),
+		servers = {
+		        @Server(url = "http://localhost:8081")
+		}
 	)
 public class OpenAPIApplicationLevelConfiguration extends Application{
 

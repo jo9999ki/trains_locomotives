@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>locomotives - 1.0-SNAPSHOT</title>
     <style>
+        img {
+			  max-width: 100%;
+			  height: auto;
+			}
         h1, h2, h3, h4, h5, h6 {
             margin-bottom: 0.5rem;
             font-weight: 400;
@@ -61,13 +65,14 @@
 
         .left-column {
             padding: .75rem;
-            max-width: 75%;
-            min-width: 55%;
+            max-width: 50%;
+            min-width: 50%;
         }
 
         .right-column {
             padding: .75rem;
-            max-width: 25%;
+            max-width: 50%;
+            min-width: 0%
         }
 
         .container {
@@ -79,17 +84,17 @@
             margin: 0.75rem;
         }
 
-        .right-section {
+        .left-section {
             margin-left: 1rem;
             padding-left: 0.5rem;
         }
 
-        .right-section h3 {
+        .left-section h3 {
             padding-top: 0;
             font-weight: 200;
         }
 
-        .right-section ul {
+        .left-section ul {
             border-left: 0.3rem solid #00A1E2;
             list-style-type: none;
             padding-left: 0;
@@ -106,24 +111,26 @@
 <div class="container">
     <div class="left-column">
         <p class="lead"> Welcome to locomotive dcc control.</p>
-    </div>
-    <div class="right-column">
-        <div class="right-section">
-            <h3>Application</h3>
+       <div class="left-section">
+            <h3>Application features</h3>
+            <ul>
+                <li><a href="/swagger-ui" target="_blank">OpenAPI view (swagger)</a></li>
+                <li><a href="/locomotives.html" target="_blank">List of locomotives (Angular/REST)</a></li>
+                <li><a href="/health" target="_blank">Accumulated state health checks (REST and database)</a></li>
+            </ul>
+        </div>
+    	<div class="left-section">
+            <h3>Application Information</h3>
             <ul>
                 <li>GroupId: de.jk.quarkus.trains</li>
                 <li>ArtifactId: locomotives</li>
                 <li>Quarkus Version: 1.4.2.Final</li>
                 <li><a href="https://github.com/jo9999ki/trains_locomotives" target="_blank">Check current version in github</a></li>
             </ul>
-        </div>
-        <div class="right-section">
-            <h3>Application features</h3>
-            <ul>
-                <li><a href="/swagger-ui" target="_blank">OpenAPI view (swagger)</a></li>
-                <li><a href="/locomotives.html" target="_blank">List of stored locomotives</a></li>
-            </ul>
-        </div>
+        </div> 
+    </div>
+    <div class="right-column">
+        <p><img src="locomotive.jpg" alt="Locomotive" ></p>  
     </div>
 </div>
 

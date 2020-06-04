@@ -649,7 +649,10 @@ Method Level
     @APIResponse(responseCode = "500", description = "Unknown error", 
 	content = @Content(mediaType = "application/json",
     		schema = @Schema(implementation = String.class)))    
-    public Response add(@Valid Locomotive locomotive) {
+    public Response add(
+    		@RequestBody(required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Locomotive.class)))
+    		@Valid Locomotive locomotive
+    		) {
 </pre></code>
 </p>
 
@@ -710,3 +713,96 @@ public class OpenAPIApplicationLevelConfiguration extends Application{
 }
 </pre></code>
 </p> 
+
+
+## Add observability capabilities
+
+### Health check
+
+* Add `SmallRye health` extension or run following maven command:<br>
+`mvnw quarkus:add-extension -Dextensions="health"`
+</p>
+
+* Check following endpoints
+`/health/live` The application is up and running
+<pre><code>
+{
+    &quot;status&quot;: &quot;UP&quot;,
+    &quot;checks&quot;: [
+    ]
+}
+</pre></code>
+</p> 
+`/health/ready` The application is ready to serve requests
+<pre><code>
+{
+    &quot;status&quot;: &quot;UP&quot;,
+    &quot;checks&quot;: [
+        {
+            &quot;name&quot;: &quot;Database connections health check&quot;,
+            &quot;status&quot;: &quot;UP&quot;
+        }
+    ]
+}
+</pre></code>
+</p> 
+<br>`/health`: accumulation of all available health checks
+<pre><code>
+{
+    &quot;status&quot;: &quot;UP&quot;,
+    &quot;checks&quot;: [
+        {
+            &quot;name&quot;: &quot;Database connections health check&quot;,
+            &quot;status&quot;: &quot;UP&quot;
+        }
+    ]
+}
+</pre></code>
+</p> 
+
+* Add customized health check for REST resource method with database access
+<pre><code>
+package de.jk.quarkus.trains.health;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.Readiness;
+import de.jk.quarkus.trains.resources.LocomotiveResource;
+<br>
+@Readiness
+@ApplicationScoped
+//Liveness Health Check
+public class LocomotiveListHealthCheck implements HealthCheck {
+<br>
+    @Inject
+    LocomotiveResource locomotiveResource;
+<br>
+    @Override
+    public HealthCheckResponse call() {
+    	locomotiveResource.getPagableList(0, 10);
+        return HealthCheckResponse.named(&quot;REST method + db health check (list)&quot;).up().build();
+    }
+}
+</pre></code>
+</p> 
+
+* Add test method for health check
+<pre><code>
+   @Test
+   @Order(40)
+   void testHealthCheck() {
+       given()
+           .when().get("/health")
+           .then()
+           .statusCode(OK.getStatusCode());
+   }
+</pre></code>
+</p> 
+   
+### Metrics
+
+
+
+
+

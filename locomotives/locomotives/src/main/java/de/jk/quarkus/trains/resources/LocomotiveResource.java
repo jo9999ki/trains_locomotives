@@ -28,6 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
@@ -162,7 +163,9 @@ public class LocomotiveResource {
     @APIResponse(responseCode = "500", description = "Unknown error", 
 	content = @Content(mediaType = "application/json",
     		schema = @Schema(implementation = String.class)))    
-    public Response add(@Valid Locomotive locomotive) {
+    public Response add(
+    		@RequestBody(required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Locomotive.class)))
+    		@Valid Locomotive locomotive) {
 		locomotive.id = null;
 		locomotive.persist();	
 		return Response.status(Response.Status.CREATED).entity(locomotive).build();
@@ -179,7 +182,9 @@ public class LocomotiveResource {
     @APIResponse(responseCode = "500", description = "Unknown error", 
 	content = @Content(mediaType = "application/json",
     		schema = @Schema(implementation = String.class)))    
-    public Response change(@Valid Locomotive locomotive) {
+    public Response change(
+    		@RequestBody(required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Locomotive.class)))
+    		@Valid Locomotive locomotive) {
     	Locomotive foundLocomotive  = new Locomotive().findById(locomotive.id);
     	if (foundLocomotive != null) {
 	    	//locomotive.persist(); //Quarkus bug, can't be used as documented

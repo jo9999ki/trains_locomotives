@@ -197,4 +197,12 @@ public class LocomotiveResourceTest {
             .then().statusCode(NO_CONTENT.getStatusCode());
    }
   
+   @Test
+   @Order(40)
+   void testHealthCheck() {
+       given()
+           .when().get("/health")
+           .then()
+           .statusCode(OK.getStatusCode());
+   }
 }
