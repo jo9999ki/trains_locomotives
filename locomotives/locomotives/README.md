@@ -611,6 +611,56 @@ public class ErrorResponse
 </pre></code>
 </p> 
 
+* See new error output structure (example for put with missing mandatory fields
+<pre><code>
+{
+    &quot;errorList&quot;: [
+        {
+            &quot;code&quot;: &quot;400001&quot;,
+            &quot;message&quot;: &quot;DCC address cannot be empty&quot;,
+            &quot;parameter&quot;: &quot;add.locomotive.address&quot;,
+            &quot;value&quot;: &quot;&quot;,
+            &quot;details&quot;: null
+        },
+        {
+            &quot;code&quot;: &quot;400001&quot;,
+            &quot;message&quot;: &quot;identification cannot be blank&quot;,
+            &quot;parameter&quot;: &quot;add.locomotive.identification&quot;,
+            &quot;value&quot;: &quot;&quot;,
+            &quot;details&quot;: null
+        }
+    ],
+    &quot;timestamp&quot;: &quot;2020-06-05T06:41:34.917994400Z&quot;
+}
+</pre></code>
+</p> 
+
+* Update test cases for new error output structure - e.g.
+<pre><code>
+@Test
+	@Order(22)
+    public void testRESTPostInputValidationMandatory() {
+        Locomotive locomotive = new Locomotive();
+        locomotive.address=null;
+        locomotive.identification=null;
+        locomotive.revision = null;
+        <br>
+        ValidatableResponse response = given().contentType(&quot;application/json&quot;).body(locomotive)
+                .when().post(&quot;/locomotives&quot;)
+                .then()
+	                //.log().body()<br>
+	                .statusCode(BAD_REQUEST.getStatusCode())<br>
+	                .body(&quot;errorList.findAll <br>
+	                		{it.code == \&quot;400001\&quot; &amp;&amp; it.parameter == \&quot;add.locomotive.identification\&quot; &amp;&amp; it.value == \&quot;\&quot;}.message&quot;, <br> 
+	                		hasItem(&quot;identification cannot be blank&quot;))<br>
+                    .body(&quot;errorList.findAll <br>
+                    		{it.code == \&quot;400001\&quot; &amp;&amp; it.parameter == \&quot;add.locomotive.address\&quot; &amp;&amp; it.value == \&quot;\&quot;}.message&quot;,  
+        					hasItem(&quot;DCC address cannot be empty&quot;));
+    }
+</pre></code>
+</p> 
+
+
 ## OpenAPI docu
 * Add extension `smallrye-openapi` with Quarkus eclipse plugin or do same by running following maven command: 
 <br>`mvnw quarkus:add-extension -Dextensions="openapi"`
