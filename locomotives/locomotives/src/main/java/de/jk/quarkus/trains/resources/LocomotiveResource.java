@@ -1,5 +1,6 @@
 package de.jk.quarkus.trains.resources;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -35,6 +36,7 @@ import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
 import de.jk.quarkus.trains.exception.ErrorsResponse;
 import de.jk.quarkus.trains.exception.RecordNotFoundException;
+import de.jk.quarkus.trains.model.Function;
 import de.jk.quarkus.trains.model.Locomotive;
 import io.quarkus.panache.common.Page;
 
@@ -167,8 +169,26 @@ public class LocomotiveResource {
     		@RequestBody(required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Locomotive.class)))
     		@Valid Locomotive locomotive) {
 		locomotive.id = null;
-		locomotive.persist();	
-		return Response.status(Response.Status.CREATED).entity(locomotive).build();
+		if (locomotive.functions == null) locomotive.functions = new ArrayList<Function>(); 
+		List<Function> functions = new ArrayList<Function>();
+		for (int i = 0; i < locomotive.functions.size(); i++) {
+			Function function = new Function();
+			function.id = null;
+			function.dccnumber = locomotive.functions.get(i).dccnumber;
+			function.name = locomotive.functions.get(i).name;
+			function.imageurl = locomotive.functions.get(i).imageurl;
+			functions.add(function);
+		}
+		locomotive.functions.clear();
+		Locomotive storedLocomotive = em.merge(locomotive);
+		for (int i = 0; i < functions.size(); i++) {
+			Function function = functions.get(i);
+			function.locomotive = new Locomotive();
+			function.locomotive.id = storedLocomotive.id;
+			function.persist();
+		}
+		storedLocomotive.functions = functions;
+		return Response.status(Response.Status.CREATED).entity(storedLocomotive).build();
     }
     
     @PUT
@@ -187,9 +207,20 @@ public class LocomotiveResource {
     		@Valid Locomotive locomotive) {
     	Locomotive foundLocomotive  = new Locomotive().findById(locomotive.id);
     	if (foundLocomotive != null) {
-	    	//locomotive.persist(); //Quarkus bug, can't be used as documented
-	    	em.merge(locomotive);
-			return Response.status(Response.Status.OK).entity(foundLocomotive).build();
+    		if (locomotive.functions == null) locomotive.functions = new ArrayList<Function>();
+    		//locomotive.persist(); //Quarkus bug, can't be used as documented
+	    	Locomotive storedLocomotive = em.merge(locomotive);
+	    	for (int i = 0; i < storedLocomotive.functions.size(); i++) {
+				Function function = new Function();
+	    		function.locomotive = new Locomotive();
+				function.locomotive.id = foundLocomotive.id;
+	    		function.id =foundLocomotive.functions.get(i).id;
+				function.dccnumber = foundLocomotive.functions.get(i).dccnumber;
+				function.name = foundLocomotive.functions.get(i).name;
+				function.imageurl = foundLocomotive.functions.get(i).imageurl;
+				em.merge(function);
+			}
+			return Response.status(Response.Status.OK).entity(storedLocomotive).build();
     	} else {
     		throw new RecordNotFoundException("record with id " + locomotive.id + " could not be found!");
     	}

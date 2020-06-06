@@ -1,3 +1,4 @@
+/*
 package de.jk.quarkus.trains.resources;
 
 import java.text.DateFormat;
@@ -19,4 +20,20 @@ public class RegisterCustomModuleCustomizer implements ObjectMapperCustomizer {
     	mapper.setDateFormat(df);
  
     }
-}
+}*/
+/*
+package de.jk.quarkus.trains.resources;
+import java.time.LocalDate;
+
+import javax.inject.Singleton;
+import javax.json.bind.JsonbConfig;
+
+import io.quarkus.jsonb.JsonbConfigCustomizer;
+
+@Singleton
+public class RegisterCustomModuleCustomizer implements JsonbConfigCustomizer {
+
+    public void customize(JsonbConfig config) {
+        config.withDeserializers(new LocalDateDeserializer());
+    }
+}*/

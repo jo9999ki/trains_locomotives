@@ -37,9 +37,9 @@ public class LocomotiveResourceTest {
 	public void testPanacheEntityList() {
 		//Check preloaded data
 		List<Locomotive> listLocomotives = Locomotive.listAll();
-		assertEquals(1,listLocomotives.get(0).address);		
+		assertEquals(9,listLocomotives.get(0).address);		
 	}
-	
+	/*
 	@Test
 	@Transactional
 	@Order(2)
@@ -52,10 +52,10 @@ public class LocomotiveResourceTest {
 		newLocomotive.persist();	
 		
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(2);
+		Locomotive myLocomotive = Locomotive.findByAddress(60);
 		assertEquals("99 6001", myLocomotive.identification);
 	}
-	
+	*/
 	@Test
 	@Transactional
 	@Order(3)
@@ -87,7 +87,7 @@ public class LocomotiveResourceTest {
 	@Order(5)
 	public void testPanacheUpdateRecord() {
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(2);
+		Locomotive myLocomotive = Locomotive.findByAddress(60);
 		assertEquals("99 6001", myLocomotive.identification);
 		
 		//Update Locomotive
@@ -127,18 +127,16 @@ public class LocomotiveResourceTest {
 	@Test
 	@Order(21)
     public void testRESTPost() {
-        Locomotive locomotive = new Locomotive();
-        locomotive.address=2;
-        locomotive.identification="99 999";
-        locomotive.revision = LocalDate.of(1985, Month.JANUARY, 1);
-        
-        ValidatableResponse response = given().contentType("application/json").body(locomotive)
+		//With RestEasy-JSON-B JSON Deserialization error for LocalDate when creating Input with Locomotive bean, instead use JSON string with correct
+        ValidatableResponse response = given().contentType("application/json")
+        		.body("{\"id\":2,\"address\":2,\"identification\":\"99 999\",\"revision\":\"2020-01-01\"}")
+        		//.body(locomotive)
                 .when().post("/locomotives")
                 .then()
-	                //.log().body()
+	                .log().body()
 	                .statusCode(CREATED.getStatusCode())
                 	.body("id", notNullValue())
-                	.body("address", equalTo(locomotive.address));
+                	.body("address", equalTo(2));
 
         LocomotiveResourceTest.identifier = Long.parseLong(response.extract().body().
         		jsonPath().get("id").toString());
@@ -157,7 +155,7 @@ public class LocomotiveResourceTest {
         ValidatableResponse response = given().contentType("application/json").body(locomotive)
                 .when().post("/locomotives")
                 .then()
-	                .log().body()
+	                //.log().body()
 	                .statusCode(BAD_REQUEST.getStatusCode())
 	                .body("errorList.findAll {it.code == \"400001\" && it.parameter == \"add.locomotive.identification\" && it.value == \"\"}.message",  
 	                		hasItem("identification cannot be blank"))
@@ -169,24 +167,20 @@ public class LocomotiveResourceTest {
    @Test
    @Order(25)
     public void testRestPut() {
-		Locomotive locomotive = new Locomotive();
-		locomotive.id= LocomotiveResourceTest.identifier;
-		locomotive.address=93;
-        locomotive.identification="99 998";
-        locomotive.revision = LocalDate.of(1986, Month.JANUARY, 1);
-
-        ValidatableResponse response = given().contentType("application/json").body(locomotive)
+        ValidatableResponse response = given().contentType("application/json")
+        		//.body(locomotive)
+        		.body("{\"id\":"+ LocomotiveResourceTest.identifier + ",\"address\":93,\"identification\":\"99 998\",\"revision\":\"1986-01-01\"}")
                 .when().put("/locomotives")
                 .then()
                 	//.log().body()
                 	.statusCode(OK.getStatusCode())
                 	//.body("id", is(book.id)) 
                 	//-> this doesn't work for long or double values. Need to use JSON Path after
-                	.body("address", equalTo(locomotive.address));
+                	.body("address", equalTo(93));
         
         Long id = Long.parseLong(response.extract().body().
         		jsonPath().get("id").toString());
-        assertEquals(id, (Long)locomotive.id);
+        assertEquals(id, (Long) LocomotiveResourceTest.identifier);
     }
    
    @Test
