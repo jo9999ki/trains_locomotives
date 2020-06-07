@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -36,6 +37,7 @@ public class Function extends PanacheEntity{
 	public String imageurl;
 
 	@ManyToOne
+	@JoinColumn(name="locomotive_id", nullable=false)
     @JsonbTransient
 	public Locomotive locomotive;
 

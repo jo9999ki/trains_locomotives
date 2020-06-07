@@ -209,17 +209,19 @@ public class LocomotiveResource {
     	if (foundLocomotive != null) {
     		if (locomotive.functions == null) locomotive.functions = new ArrayList<Function>();
     		//locomotive.persist(); //Quarkus bug, can't be used as documented
-	    	Locomotive storedLocomotive = em.merge(locomotive);
-	    	for (int i = 0; i < storedLocomotive.functions.size(); i++) {
+	    	//Locomotive storedLocomotive = em.merge(locomotive);
+	    	for (int i = 0; i < locomotive.functions.size(); i++) {
 				Function function = new Function();
 	    		function.locomotive = new Locomotive();
-				function.locomotive.id = foundLocomotive.id;
-	    		function.id =foundLocomotive.functions.get(i).id;
-				function.dccnumber = foundLocomotive.functions.get(i).dccnumber;
-				function.name = foundLocomotive.functions.get(i).name;
-				function.imageurl = foundLocomotive.functions.get(i).imageurl;
-				em.merge(function);
+				function.locomotive.id = locomotive.id;
+	    		function.id = locomotive.functions.get(i).id;
+				function.dccnumber = locomotive.functions.get(i).dccnumber;
+				function.name = locomotive.functions.get(i).name;
+				function.imageurl = locomotive.functions.get(i).imageurl;
+				Function mergedfunction = em.merge(function);
+				locomotive.functions.set(i, mergedfunction);
 			}
+	    	Locomotive storedLocomotive = em.merge(locomotive);
 			return Response.status(Response.Status.OK).entity(storedLocomotive).build();
     	} else {
     		throw new RecordNotFoundException("record with id " + locomotive.id + " could not be found!");

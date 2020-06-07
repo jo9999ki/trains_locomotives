@@ -39,23 +39,24 @@ public class LocomotiveResourceTest {
 		List<Locomotive> listLocomotives = Locomotive.listAll();
 		assertEquals(9,listLocomotives.get(0).address);		
 	}
-	/*
+	
 	@Test
 	@Transactional
 	@Order(2)
 	public void testPanacheAddNewRecordAndFindByAddress() {
 		//Add new record
 		Locomotive newLocomotive = new Locomotive();
-		newLocomotive.address = 2;
-		newLocomotive.identification = "99 6001";
+		newLocomotive.id= null;
+		newLocomotive.address = 100;
+		newLocomotive.identification = "99 9999";
 		newLocomotive.revision = LocalDate.of(1985, Month.JANUARY, 1);
 		newLocomotive.persist();	
 		
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(60);
-		assertEquals("99 6001", myLocomotive.identification);
+		Locomotive myLocomotive = Locomotive.findByAddress(100);
+		assertEquals("99 9999", myLocomotive.identification);
 	}
-	*/
+	
 	@Test
 	@Transactional
 	@Order(3)
@@ -76,7 +77,7 @@ public class LocomotiveResourceTest {
 		assertEquals(1, pagedLocomotiveList.pageCount());
 		// get the first page
 		List<Locomotive> firstPage = pagedLocomotiveList.list();
-		assertEquals(2, firstPage.size());
+		assertThat("listsize", firstPage.size() > 0);		
 		// get the xxx page
 		List<Locomotive> page2 = pagedLocomotiveList.page(Page.of(2, 25)).list();
 		assertEquals(0, page2.size());
@@ -87,15 +88,15 @@ public class LocomotiveResourceTest {
 	@Order(5)
 	public void testPanacheUpdateRecord() {
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(60);
-		assertEquals("99 6001", myLocomotive.identification);
+		Locomotive myLocomotive = Locomotive.findByAddress(100);
+		assertEquals("99 9999", myLocomotive.identification);
 		
 		//Update Locomotive
 		Long id = myLocomotive.id;
-	    myLocomotive.address=3;
+	    myLocomotive.address=101;
 		myLocomotive.persist();
 		Locomotive updatedLocomotive = Locomotive.findById(id);
-		assertEquals(3, updatedLocomotive.address);
+		assertEquals(101, updatedLocomotive.address);
 	}
 	
 	@Test
@@ -103,8 +104,8 @@ public class LocomotiveResourceTest {
 	@Order(6)
 	public void testPanacheDeleteRecord() {
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(3);
-		assertEquals("99 6001", myLocomotive.identification);
+		Locomotive myLocomotive = Locomotive.findByAddress(101);
+		assertEquals("99 9999", myLocomotive.identification);
 				
 		//Delete Locomotive
 		Long id = myLocomotive.id;
@@ -133,7 +134,7 @@ public class LocomotiveResourceTest {
         		//.body(locomotive)
                 .when().post("/locomotives")
                 .then()
-	                .log().body()
+	                //.log().body()
 	                .statusCode(CREATED.getStatusCode())
                 	.body("id", notNullValue())
                 	.body("address", equalTo(2));

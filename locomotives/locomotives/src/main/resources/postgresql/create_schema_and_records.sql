@@ -1,6 +1,10 @@
 DROP TABLE public.function;
 DROP TABLE public.locomotive;
 
+DROP SEQUENCE public.hibernate_sequence;
+
+CREATE SEQUENCE public.hibernate_sequence;
+
 CREATE TABLE public.locomotive
 (
     id bigint NOT NULL,
@@ -16,15 +20,15 @@ TABLESPACE pg_default;
 ALTER TABLE public.locomotive
     OWNER to dcc;
 
-DROP INDEX public.index_locomotive;
+-- DROP INDEX public.index_locomotive;
 
 CREATE INDEX index_locomotive
     ON public.locomotive USING btree
      (address)
      TABLESPACE pg_default;
 
-INSERT INTO public.locomotive VALUES (0, 9, '99 5906', '1986-01-01');
-INSERT INTO public.locomotive VALUES (1, 60, '99 6001', '1986-01-01');
+INSERT INTO public.locomotive VALUES (1, 9, '99 5906', '1986-01-01');
+INSERT INTO public.locomotive VALUES (2, 60, '99 6001', '1986-01-01');
 
 
 CREATE TABLE public.function
@@ -46,5 +50,7 @@ TABLESPACE pg_default;
 ALTER TABLE public.function
     OWNER to dcc;
 
-INSERT INTO public.function VALUES (0, 15, 'luftpumpe.jpg', 'Luftpumpe', 0);
-INSERT INTO public.function VALUES (1, 12, 'Kohlen.jpg', 'Kohlen schaufeln', 0);
+INSERT INTO public.function VALUES (3, 15, 'luftpumpe.jpg', 'Luftpumpe', 1);
+INSERT INTO public.function VALUES (4, 12, 'Kohlen.jpg', 'Kohlen schaufeln', 1);
+
+SELECT setval('public."hibernate_sequence"',4);
