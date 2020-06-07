@@ -10,8 +10,8 @@ CREATE TABLE locomotive (
 
 CREATE INDEX index_locomotive ON locomotive (address);
 
-INSERT INTO locomotive VALUES (1, 9, '99 5906', '1986-01-01');
-INSERT INTO public.locomotive VALUES (2, 60, '99 6001', '1986-01-01');
+INSERT INTO locomotive VALUES (nextval('hibernate_sequence'), 9, '99 5906', '1986-01-01');
+INSERT INTO public.locomotive VALUES (nextval('hibernate_sequence'), 60, '99 6001', '1986-01-01');
 
 CREATE TABLE function (
   id INTEGER  IDENTITY NOT NULL PRIMARY KEY,
@@ -22,8 +22,5 @@ CREATE TABLE function (
   FOREIGN KEY (locomotive_id) REFERENCES locomotive(id),
 );
 
-INSERT INTO public.function VALUES (3, 15, 'luftpumpe.jpg', 'Luftpumpe', 1);
-INSERT INTO public.function VALUES (4, 12, 'Kohlen.jpg', 'Kohlen schaufeln', 1);
-
-DROP SEQUENCE hibernate_sequence;
-CREATE SEQUENCE IF NOT EXISTS hibernate_sequence START WITH 5; 
+INSERT INTO public.function VALUES (nextval('hibernate_sequence'), 15, 'luftpumpe.jpg', 'Luftpumpe', 1);
+INSERT INTO public.function VALUES (nextval('hibernate_sequence'), 12, 'Kohlen.jpg', 'Kohlen schaufeln', 1);

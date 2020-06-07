@@ -27,8 +27,10 @@ CREATE INDEX index_locomotive
      (address)
      TABLESPACE pg_default;
 
-INSERT INTO public.locomotive VALUES (1, 9, '99 5906', '1986-01-01');
-INSERT INTO public.locomotive VALUES (2, 60, '99 6001', '1986-01-01');
+-- Locomotive with id 1
+INSERT INTO public.locomotive VALUES (nextval('hibernate_sequence'), 9, '99 5906', '1986-01-01');
+-- Locomotive with id 2
+INSERT INTO public.locomotive VALUES (nextval('hibernate_sequence'), 60, '99 6001', '1986-01-01');
 
 
 CREATE TABLE public.function
@@ -50,7 +52,7 @@ TABLESPACE pg_default;
 ALTER TABLE public.function
     OWNER to dcc;
 
-INSERT INTO public.function VALUES (3, 15, 'luftpumpe.jpg', 'Luftpumpe', 1);
-INSERT INTO public.function VALUES (4, 12, 'Kohlen.jpg', 'Kohlen schaufeln', 1);
+INSERT INTO public.function VALUES (nextval('hibernate_sequence'), 15, 'luftpumpe.jpg', 'Luftpumpe', 1);
+INSERT INTO public.function VALUES (nextval('hibernate_sequence'), 12, 'Kohlen.jpg', 'Kohlen schaufeln', 1);
 
-SELECT setval('public."hibernate_sequence"',4);
+-- SELECT setval('public."hibernate_sequence"',4);
