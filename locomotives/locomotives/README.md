@@ -852,7 +852,26 @@ public class LocomotiveListHealthCheck implements HealthCheck {
    
 ### Metrics
 
+## Final Build and Deployment
 
+### Native Build
 
+* Native build fails with memory error due to not enough docker memory (max. 5.25 GB configured)
+
+### JVM build
+
+* Run `mvn package` or start build in eclipse with `run / maven install`
+
+* Start docker desktop (including deamon)
+
+* Stop local database server and deploy postgresql dcc db on docker<br>
+`docker run --name dcc-db -p 5432:5432 -e POSTGRES_DB=dcc -e POSTGRES_USER=dcc -e POSTGRES_PASSWORD=dcc -d quay.io/coreos/postgres:latest`
+
+* Make sure, that service port in application.properties is same as in docker file - here 8081
+
+* Build docker image: `docker build -f src/main/docker/Dockerfile.jvm -t quarkus/locomotives-jvm .`
+
+* Deploy docker image with access to postgresql container<br>
+`docker run -i --rm -p 8081:8081 -e "QUARKUS_DATASOURCE_URL=jdbc:postgresql://dcc-db:5432/dcc" --link dcc-db:quay.io/coreos/postgres quarkus/locomotives-jvm`
 
 
