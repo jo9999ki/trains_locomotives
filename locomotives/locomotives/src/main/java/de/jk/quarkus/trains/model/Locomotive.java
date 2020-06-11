@@ -21,7 +21,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 @Schema(name="Locomotive", description="data required for control of a locomotive") //OpenAPI
 public class Locomotive extends PanacheEntity{
-	//Id added by panache
+	//Id added by panache 
 	
 	//number or other identifier
 	@NotBlank(message="identification cannot be blank") //Validation
