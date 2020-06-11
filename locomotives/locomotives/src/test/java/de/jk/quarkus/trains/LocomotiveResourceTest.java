@@ -37,7 +37,7 @@ public class LocomotiveResourceTest {
 	public void testPanacheEntityList() {
 		//Check preloaded data
 		List<Locomotive> listLocomotives = Locomotive.listAll();
-		assertEquals(1,listLocomotives.get(0).address);		
+		assertEquals(9,listLocomotives.get(0).address);		
 	}
 	
 	@Test
@@ -46,14 +46,15 @@ public class LocomotiveResourceTest {
 	public void testPanacheAddNewRecordAndFindByAddress() {
 		//Add new record
 		Locomotive newLocomotive = new Locomotive();
-		newLocomotive.address = 2;
-		newLocomotive.identification = "99 6001";
+		newLocomotive.id= null;
+		newLocomotive.address = 100;
+		newLocomotive.identification = "99 9999";
 		newLocomotive.revision = LocalDate.of(1985, Month.JANUARY, 1);
 		newLocomotive.persist();	
 		
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(2);
-		assertEquals("99 6001", myLocomotive.identification);
+		Locomotive myLocomotive = Locomotive.findByAddress(100);
+		assertEquals("99 9999", myLocomotive.identification);
 	}
 	
 	@Test
@@ -76,7 +77,7 @@ public class LocomotiveResourceTest {
 		assertEquals(1, pagedLocomotiveList.pageCount());
 		// get the first page
 		List<Locomotive> firstPage = pagedLocomotiveList.list();
-		assertEquals(2, firstPage.size());
+		assertThat("listsize", firstPage.size() > 0);		
 		// get the xxx page
 		List<Locomotive> page2 = pagedLocomotiveList.page(Page.of(2, 25)).list();
 		assertEquals(0, page2.size());
@@ -87,15 +88,15 @@ public class LocomotiveResourceTest {
 	@Order(5)
 	public void testPanacheUpdateRecord() {
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(2);
-		assertEquals("99 6001", myLocomotive.identification);
+		Locomotive myLocomotive = Locomotive.findByAddress(100);
+		assertEquals("99 9999", myLocomotive.identification);
 		
 		//Update Locomotive
 		Long id = myLocomotive.id;
-	    myLocomotive.address=3;
+	    myLocomotive.address=101;
 		myLocomotive.persist();
 		Locomotive updatedLocomotive = Locomotive.findById(id);
-		assertEquals(3, updatedLocomotive.address);
+		assertEquals(101, updatedLocomotive.address);
 	}
 	
 	@Test
@@ -103,8 +104,8 @@ public class LocomotiveResourceTest {
 	@Order(6)
 	public void testPanacheDeleteRecord() {
 		//Find first locomotive with certain address
-		Locomotive myLocomotive = Locomotive.findByAddress(3);
-		assertEquals("99 6001", myLocomotive.identification);
+		Locomotive myLocomotive = Locomotive.findByAddress(101);
+		assertEquals("99 9999", myLocomotive.identification);
 				
 		//Delete Locomotive
 		Long id = myLocomotive.id;
@@ -127,18 +128,16 @@ public class LocomotiveResourceTest {
 	@Test
 	@Order(21)
     public void testRESTPost() {
-        Locomotive locomotive = new Locomotive();
-        locomotive.address=2;
-        locomotive.identification="99 999";
-        locomotive.revision = LocalDate.of(1985, Month.JANUARY, 1);
-        
-        ValidatableResponse response = given().contentType("application/json").body(locomotive)
+		//With RestEasy-JSON-B JSON Deserialization error for LocalDate when creating Input with Locomotive bean, instead use JSON string with correct
+        ValidatableResponse response = given().contentType("application/json")
+        		.body("{\"id\":2,\"address\":2,\"identification\":\"99 999\",\"revision\":\"2020-01-01\"}")
+        		//.body(locomotive)
                 .when().post("/locomotives")
                 .then()
 	                //.log().body()
 	                .statusCode(CREATED.getStatusCode())
                 	.body("id", notNullValue())
-                	.body("address", equalTo(locomotive.address));
+                	.body("address", equalTo(2));
 
         LocomotiveResourceTest.identifier = Long.parseLong(response.extract().body().
         		jsonPath().get("id").toString());
@@ -169,24 +168,20 @@ public class LocomotiveResourceTest {
    @Test
    @Order(25)
     public void testRestPut() {
-		Locomotive locomotive = new Locomotive();
-		locomotive.id= LocomotiveResourceTest.identifier;
-		locomotive.address=93;
-        locomotive.identification="99 998";
-        locomotive.revision = LocalDate.of(1986, Month.JANUARY, 1);
-
-        ValidatableResponse response = given().contentType("application/json").body(locomotive)
+        ValidatableResponse response = given().contentType("application/json")
+        		//.body(locomotive)
+        		.body("{\"id\":"+ LocomotiveResourceTest.identifier + ",\"address\":93,\"identification\":\"99 998\",\"revision\":\"1986-01-01\"}")
                 .when().put("/locomotives")
                 .then()
                 	//.log().body()
                 	.statusCode(OK.getStatusCode())
                 	//.body("id", is(book.id)) 
                 	//-> this doesn't work for long or double values. Need to use JSON Path after
-                	.body("address", equalTo(locomotive.address));
+                	.body("address", equalTo(93));
         
         Long id = Long.parseLong(response.extract().body().
         		jsonPath().get("id").toString());
-        assertEquals(id, (Long)locomotive.id);
+        assertEquals(id, (Long) LocomotiveResourceTest.identifier);
     }
    
    @Test
