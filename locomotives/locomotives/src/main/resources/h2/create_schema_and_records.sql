@@ -10,8 +10,9 @@ CREATE TABLE locomotive (
 
 CREATE INDEX index_locomotive ON locomotive (address);
 
-INSERT INTO locomotive VALUES (nextval('hibernate_sequence'), 9, '99 5906', '1986-01-01');
+INSERT INTO public.locomotive VALUES (nextval('hibernate_sequence'), 9, '99 5906', '1986-01-01');
 INSERT INTO public.locomotive VALUES (nextval('hibernate_sequence'), 60, '99 6001', '1986-01-01');
+INSERT INTO public.locomotive VALUES (nextval('hibernate_sequence'), 64, '99 1564', '1973-10-16');
 
 CREATE TABLE function (
   id INTEGER  IDENTITY NOT NULL PRIMARY KEY,

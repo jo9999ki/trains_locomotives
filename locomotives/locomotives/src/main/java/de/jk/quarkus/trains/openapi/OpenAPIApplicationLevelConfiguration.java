@@ -25,7 +25,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 	            name = "Apache 2.0",
 	            url = "http://www.apache.org/licenses/LICENSE-2.0.html")),
 		servers = {
-		        @Server(url = "http://localhost:8081")
+		        @Server(url = "http://localhost:8081"),
+		        @Server(url = "http://localhost:51045")
 		}
 	)
 public class OpenAPIApplicationLevelConfiguration extends Application{
